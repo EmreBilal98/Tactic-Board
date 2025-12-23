@@ -109,7 +109,7 @@ ApplicationWindow {
          }
      }
 
-     //burası bizim stack barda gözükecek menlerin ayarlanacağı yer
+     //burası bizim stack barda gözükecek formasyonların ayarlanacağı yer
     Drawer {
         id: drawer
         width: window.width * 0.17

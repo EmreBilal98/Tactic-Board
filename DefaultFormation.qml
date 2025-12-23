@@ -26,8 +26,9 @@ Item {
         visible: (forwards) ? true : false
         anchors.verticalCenter: parent.verticalCenter//dikey ortalar
         Footballer{
-            width:40
-            height: 40
+            id:goalkeeper
+            width:root.width/20
+            height: root.width/20
         }
         }
 
@@ -40,8 +41,8 @@ Item {
                 model: defenders
 
                 delegate: Footballer {
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -55,8 +56,8 @@ Item {
                 model: middfielders
 
                 delegate: Footballer {
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -70,8 +71,8 @@ Item {
                 model: forwards
 
                 delegate: Footballer {
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -95,8 +96,8 @@ Item {
 
                 delegate: Footballer {
                     color: "yellow"
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -111,8 +112,8 @@ Item {
 
                 delegate: Footballer {
                     color: "yellow"
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -127,8 +128,8 @@ Item {
 
                 delegate: Footballer {
                     color: "yellow"
-                    width: 40
-                    height: 40
+                    width: root.width/20
+                    height: root.width/20
                 }
             }
 
@@ -139,8 +140,8 @@ Item {
         anchors.verticalCenter: parent.verticalCenter//dikey ortalar
         Footballer{
             color: "yellow"
-            width:40
-            height: 40
+            width:root.width/20
+            height: root.width/20
         }
         }
     }
