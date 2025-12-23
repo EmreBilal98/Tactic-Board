@@ -10,6 +10,9 @@ Item {
     property int mydefenders: 0
     property int mymiddfielders: 0
     property int myforwards: 0
+    property int myrivaldefenders: 0
+    property int myrivalmiddfielders: 0
+    property int myrivalforwards: 0
 
     //burada 3 ekran var.takım dizilişi,toplu oyun,topsuz oyun
     SwipeView {
@@ -20,11 +23,11 @@ Item {
         // --- TAKIM DİZİLİŞİ ---
         Item {
             MyBackground{z:0}
-            Footballer {
-                x:40
-                y:40
-                width:20
-                height: 20
+            //formasyona göre tahtaya diziliş
+            DefaultFormation{
+                defenders: mydefenders
+                middfielders: mymiddfielders
+                forwards: myforwards
             }
         }
 
@@ -35,19 +38,36 @@ Item {
 
             //formasyona göre tahtaya diziliş
             DefaultFormation{
+                spaceRate: 10
                 defenders: mydefenders
                 middfielders: mymiddfielders
                 forwards: myforwards
+                rivaldefenders: myrivaldefenders
+                rivalmiddfielders: myrivalmiddfielders
+                rivalforwards: myrivalforwards
             }
 
         }
 
         // --- TOPSUZ OYUN ---
         Item {
-            MyBackground{}
+            //arka plan
+            MyBackground{background: backcolor;z:0}
+
+            //formasyona göre tahtaya diziliş
+            DefaultFormation{
+                spaceRate: 10
+                defenders: mydefenders
+                middfielders: mymiddfielders
+                forwards: myforwards
+                rivaldefenders: myrivaldefenders
+                rivalmiddfielders: myrivalmiddfielders
+                rivalforwards: myrivalforwards
+            }
         }
     }
 
+    //hangi sayfada olunduğunu gösteren indikatör
     PageIndicator {
         anchors.bottom: parent.bottom
         currentIndex: view.currentIndex

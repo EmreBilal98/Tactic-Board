@@ -36,6 +36,8 @@ ApplicationWindow {
         }
         //yeni formasyon eklemek için bir action button
         ToolButton {display: AbstractButton.TextOnly; action: actionFormation}
+        //yeni rakip formasyonu eklemek için bir action button
+        ToolButton {display: AbstractButton.TextOnly; action: actionRFormation}
         }
 
     }
@@ -45,9 +47,21 @@ ApplicationWindow {
          text: qsTr("Formation")
          onTriggered: {
              //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
+            formationPopup.action=false
             formationPopup.open()
          }
      }
+
+     //rakip formasyonu seçmeyi triggerlayan action bar
+      Action {
+          id: actionRFormation
+          text: qsTr("RivalFormation")
+          onTriggered: {
+              //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
+             formationPopup.action=true
+             formationPopup.open()
+          }
+      }
 
      //formasyon seçme aksiyonunun pop-up ı
      Popup {
@@ -59,6 +73,8 @@ ApplicationWindow {
          focus: true
          closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
          clip:true
+
+         property bool action:false//0 ise kendi takımın 1 ise rakip takım ayarlanacak
 
          //içinde formasyonlar içeren liste
          ListView {
@@ -73,6 +89,7 @@ ApplicationWindow {
              signal formationSelected(string name, int def, int mid, int fwd)
 
              onFormationSelected:(name,def,mid,fwd)=>{
+                                     if(!formationPopup.action){//takım formasyon ekleme aksiyonu
                                      var newIndex = dynamicMenuModel.count + 1
                                      dynamicMenuModel.append({
                                                                  "title": name,
@@ -81,6 +98,12 @@ ApplicationWindow {
                                                                  "fwdCount": fwd, // Forvet sayısı
                                                                  "pageSource": stackPage // Hangi sayfaya gideceği
                                                              })
+                                     }
+                                     else{//rakip takım formasyon ekleme aksiyonu
+                                         stackView.currentItem.myrivaldefenders = def
+                                         stackView.currentItem.myrivalmiddfielders = mid
+                                         stackView.currentItem.myrivalforwards = fwd
+                                     }
                                  }
 
          }
