@@ -8,6 +8,8 @@ ApplicationWindow {
     height: 480
     title: qsTr("Tactic Board")
 
+    property var tacticStorage: []//futbolcuların konumlarını tutan data
+
     //buradaki toolbar da seçilen formasyonların isimlerini tutan bir stack view yapısı ve formasyon seçme action u var
      header:ToolBar {
         contentHeight: toolButton.implicitHeight
@@ -90,13 +92,13 @@ ApplicationWindow {
 
              onFormationSelected:(name,def,mid,fwd)=>{
                                      if(!formationPopup.action){//takım formasyon ekleme aksiyonu
-                                     var newIndex = dynamicMenuModel.count + 1
+                                     window.tacticStorage.push([ [], [], [] ]);
                                      dynamicMenuModel.append({
-                                                                 "title": name,
+                                                                 "title": name,//formasyon ismi
                                                                  "defCount": def, // Defans sayısı
                                                                  "midCount": mid, // Orta saha sayısı
                                                                  "fwdCount": fwd, // Forvet sayısı
-                                                                 "pageSource": stackPage // Hangi sayfaya gideceği
+                                                                 "pageSource": stackPage, // Hangi sayfaya gideceği
                                                              })
                                      }
                                      else{//rakip takım formasyon ekleme aksiyonu
@@ -114,6 +116,7 @@ ApplicationWindow {
         id: drawer
         width: window.width * 0.17
         height: window.height
+
 
         //bu model yeni formasyonun ekleneceği model
         ListModel {
@@ -160,7 +163,8 @@ ApplicationWindow {
                         stackView.push(model.pageSource,{
                                            "mydefenders": model.defCount,
                                            "mymiddfielders": model.midCount,
-                                           "myforwards": model.fwdCount
+                                           "myforwards": model.fwdCount,
+                                           "menuIndex": index,// Modeldeki sırasını bilsin ki oraya geri yazsın
                                        }) // Modelden gelen sayfa yolu
                         drawer.close()
                     }
@@ -187,4 +191,40 @@ ApplicationWindow {
             id: stackPage
             BasePage {}
         }
-}
+
+    //tacticstorageye veriyi yazıyor
+    function updateModelPosition(tacticIndex, pageIndex, playerIndex, x, y) {
+            if (tacticIndex === -1) return;
+
+            // 1. Veriyi tacticStorage'dan çek
+            var allPagesData = window.tacticStorage[tacticIndex];
+
+            // Eğer veri henüz yoksa oluştur
+            if (!allPagesData) {
+                allPagesData = [[], [], []];
+            }
+
+            // 2. İlgili sayfayı kontrol et
+            if (!allPagesData[pageIndex]) {
+                allPagesData[pageIndex] = [];
+            }
+
+            // 3. Eksik indeksleri doldur (Array boşluklarını doldur)
+            while (allPagesData[pageIndex].length <= playerIndex) {
+                allPagesData[pageIndex].push({ x: 0, y: 0 });
+            }
+
+            // 4. Veriyi güncelle
+            allPagesData[pageIndex][playerIndex] = { x: x, y: y };
+
+            // 5. Depoya geri yaz
+            window.tacticStorage[tacticIndex] = allPagesData;
+
+            console.log("KAYIT BAŞARILI (Storage): Tactic", tacticIndex, "Page", pageIndex, "XY:", x, y);
+
+            // 6. Ekrana Canlı Yansıt
+            if (stackView.currentItem && stackView.currentItem.menuIndex === tacticIndex) {
+                stackView.currentItem.savedPositions = allPagesData;
+            }
+        }
+    }
