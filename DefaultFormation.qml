@@ -29,7 +29,7 @@ Item {
     //yatayda kaleci-defans-ortasaha-forvet sırasıyla tutacak satır
     Row{
         id: row
-        anchors.verticalCenter: parent.verticalCenter
+        //anchors.verticalCenter: parent.verticalCenter
         anchors.left:parent.left
         anchors.leftMargin: 25
         spacing:(parent.width-200)/spaceRate
@@ -37,7 +37,8 @@ Item {
         //kaleci(column içinde olmazsa sadece horizontal harekete izin veriyor anchors.berticalcenter satırı.)
         Column{
         visible: (forwards) ? true : false
-        anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+        //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+        y: (root.height - height) / 2
         Footballer{
             id:goalkeeper
             width:root.width/20
@@ -104,7 +105,8 @@ Item {
 
         //defans
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: defenders
@@ -174,7 +176,8 @@ Item {
 
         //orta saha
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: middfielders
@@ -244,7 +247,8 @@ Item {
 
         //forvet
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: forwards
@@ -316,14 +320,15 @@ Item {
     }
     Row {
         visible: (rivalforwards) ? true : false
-        anchors.verticalCenter: parent.verticalCenter
+        //anchors.verticalCenter: parent.verticalCenter
         anchors.right:parent.right
         anchors.rightMargin: 25
         spacing:(parent.width-200)/spaceRate
 
         //rakip forvet
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: rivalforwards
@@ -339,7 +344,8 @@ Item {
 
         //rakip ortasaha
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: rivalmiddfielders
@@ -355,7 +361,8 @@ Item {
 
         //rakip defans
         Column{
-            anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+            y: (root.height - height) / 2
             spacing: 40
             Repeater {
                 model: rivaldefenders
@@ -371,7 +378,8 @@ Item {
 
         //rakip kaleci
         Column{
-        anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+        //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
+        y: (root.height - height) / 2
         Footballer{
             color: "yellow"
             width:root.width/20
