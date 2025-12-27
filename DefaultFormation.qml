@@ -26,23 +26,19 @@ Item {
             // console.log("DefaultFormation: Yeni pozisyon verisi geldi, uzunluk:", inputPositions ? inputPositions.length : 0)
         }
 
-    //yatayda kaleci-defans-ortasaha-forvet sırasıyla tutacak satır
-    Row{
-        id: row
-        //anchors.verticalCenter: parent.verticalCenter
-        anchors.left:parent.left
-        anchors.leftMargin: 25
-        spacing:(parent.width-200)/spaceRate
 
         //kaleci(column içinde olmazsa sadece horizontal harekete izin veriyor anchors.berticalcenter satırı.)
-        Column{
+        Item {
+        anchors.fill:parent
         visible: (forwards) ? true : false
         //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-        y: (root.height - height) / 2
+
         Footballer{
             id:goalkeeper
             width:root.width/20
             height: root.width/20
+            x:26
+            y: (root.height - height) / 2
 
             readonly property int myIndex: 0
 
@@ -63,7 +59,7 @@ Item {
 
                     // 3. HATA ÖNLEYİCİ (0,0 Kontrolü)
                     // Kaleci (Index 0) hariç diğerleri 0,0'a gidemez
-                    if (myIndex > 0 && incomingX === 0 && incomingY === 0) {
+                    if (myIndex >= 0 && incomingX === 0 && incomingY === 0) {
                         console.log("LOG: [" + myIndex + "] Hatalı (0,0) verisi geldi, güncelleme iptal edildi.");
                         return;
                     }
@@ -104,18 +100,20 @@ Item {
 
 
         //defans
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            //y: (root.height - height) / 2
+            //spacing: 40
             Repeater {
                 model: defenders
+
 
                 delegate: Footballer {
                     id:defplayer
                     width: root.width/20
                     height: root.width/20
-
+                    y: ((root.height - height) / 2)-((defenders-index-((defenders+1)/2))*root.height/6)
+                    x:26+((root.width-200)/spaceRate)+width
                     readonly property int myIndex: 1+index
 
                     // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
@@ -175,10 +173,10 @@ Item {
         }
 
         //orta saha
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            //y: (root.height - height) / 2
+            //spacing: 40
             Repeater {
                 model: middfielders
 
@@ -186,7 +184,8 @@ Item {
                     id:midplayers
                     width: root.width/20
                     height: root.width/20
-
+                    y: ((root.height - height) / 2)-((middfielders-index-((middfielders+1)/2))*root.height/6)
+                    x:26+2*(((root.width-200)/spaceRate)+width)
                     readonly property int myIndex: 1+root.defenders+index
 
                     // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
@@ -246,10 +245,10 @@ Item {
         }
 
         //forvet
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            //y: (root.height - height) / 2
+            //spacing: 40
             Repeater {
                 model: forwards
 
@@ -257,6 +256,8 @@ Item {
                     id:fwdplayers
                     width: root.width/20
                     height: root.width/20
+                    y: ((root.height - height) / 2)-((forwards-index-((forwards+1)/2))*root.height/6)
+                    x:26+3*(((root.width-200)/spaceRate)+width)
 
                     readonly property int myIndex: 1+root.defenders+root.middfielders+index
 
@@ -317,73 +318,303 @@ Item {
         }
 
 
-    }
-    Row {
+
+    Item {
         visible: (rivalforwards) ? true : false
         //anchors.verticalCenter: parent.verticalCenter
-        anchors.right:parent.right
-        anchors.rightMargin: 25
-        spacing:(parent.width-200)/spaceRate
+        // anchors.right:parent.right
+        // anchors.rightMargin: 25
+        // spacing:(parent.width-200)/spaceRate
+        anchors.fill:parent
 
         //rakip forvet
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            //y: (root.height - height) / 2
+            //spacing: 40
             Repeater {
                 model: rivalforwards
 
                 delegate: Footballer {
+                    id:rfwdplayers
                     color: "yellow"
                     width: root.width/20
                     height: root.width/20
+                    y: ((root.height - height) / 2)-((rivalforwards-index-((rivalforwards+1)/2))*root.height/6)
+                    x:root.width-(26+width+3*(((root.width-200)/spaceRate)+width))
+                    readonly property int myIndex: 1+root.defenders+root.middfielders+root.forwards+index
+
+                    // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
+                    function updatePosition() {
+                        // 1. Fare ile tutuyorsam güncelleme
+                        if (typeof isPressed !== "undefined" && isPressed) return;
+
+                        var source = "YOK (Data Undefined)"; // Log için durum
+                        var incomingX = 0;
+                        var incomingY = 0;
+
+                        // 2. Veri kontrolü
+                        if (root.inputPositions && root.inputPositions[myIndex]) {
+                            incomingX = root.inputPositions[myIndex].x;
+                            incomingY = root.inputPositions[myIndex].y;
+                            source = "VERİTABANI";
+
+                            // 3. HATA ÖNLEYİCİ (0,0 Kontrolü)
+                            // Kaleci (Index 0) hariç diğerleri 0,0'a gidemez
+                            if (myIndex > 0 && incomingX === 0 && incomingY === 0) {
+                                console.log("LOG: [" + myIndex + "] Hatalı (0,0) verisi geldi, güncelleme iptal edildi.");
+                                return;
+                            }
+
+                            // Koordinatları Ata
+                            x = incomingX;
+                            y = incomingY;
+                        }
+
+                        // 4. KONSOLA DURUMU YAZ (BU SATIR ÇOK ÖNEMLİ)
+                        console.log("LOG: Oyuncu [" + myIndex + "] Güncellendi -> X: " + Math.round(x) + " Y: " + Math.round(y) +
+                                    " | Kaynak: " + source + " | Gelen Veri: " + Math.round(incomingX) + "," + Math.round(incomingY));
+                    }
+
+                    Component.onCompleted:{
+                        console.log("LOG: Oyuncu [" + myIndex + "] YARATILDI (Component.onCompleted)");
+                        updatePosition()
+
+                    }
+
+                    // 3. ÖNEMLİ OLAN BU: Ana verideki (root.inputPositions) değişiklikleri dinle!
+                        Connections {
+                            target: root
+                            function onInputPositionsChanged() {
+                                rfwdplayers.updatePosition()
+                            }
+                        }
+
+
+                    // Sürükleme bitince sinyal gönder
+                    onPlayerReleased:(newX, newY) =>{ // MouseArea içindeyse
+                                    console.log("LOG: Oyuncu [" + myIndex + "] Elle Bırakıldı -> X: " + Math.round(newX) + " Y: " + Math.round(newY));
+                                    root.playerMoved(myIndex, newX, newY)
+                                }
+
                 }
             }
 
         }
 
         //rakip ortasaha
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            // y: (root.height - height) / 2
+            // spacing: 40
             Repeater {
                 model: rivalmiddfielders
 
                 delegate: Footballer {
+                    id:rmidplayers
+                    readonly property int myIndex: 1+root.defenders+root.middfielders+root.forwards+root.rivalforwards+index
                     color: "yellow"
                     width: root.width/20
                     height: root.width/20
+                    y: ((root.height - height) / 2)-((rivalmiddfielders-index-((rivalmiddfielders+1)/2))*root.height/6)
+                    x:root.width-(26+width+2*(((root.width-200)/spaceRate)+width))
+
+                    // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
+                    function updatePosition() {
+                        // 1. Fare ile tutuyorsam güncelleme
+                        if (typeof isPressed !== "undefined" && isPressed) return;
+
+                        var source = "YOK (Data Undefined)"; // Log için durum
+                        var incomingX = 0;
+                        var incomingY = 0;
+
+                        // 2. Veri kontrolü
+                        if (root.inputPositions && root.inputPositions[myIndex]) {
+                            incomingX = root.inputPositions[myIndex].x;
+                            incomingY = root.inputPositions[myIndex].y;
+                            source = "VERİTABANI";
+
+                            // 3. HATA ÖNLEYİCİ (0,0 Kontrolü)
+                            // Kaleci (Index 0) hariç diğerleri 0,0'a gidemez
+                            if (myIndex > 0 && incomingX === 0 && incomingY === 0) {
+                                console.log("LOG: [" + myIndex + "] Hatalı (0,0) verisi geldi, güncelleme iptal edildi.");
+                                return;
+                            }
+
+                            // Koordinatları Ata
+                            x = incomingX;
+                            y = incomingY;
+                        }
+
+                        // 4. KONSOLA DURUMU YAZ (BU SATIR ÇOK ÖNEMLİ)
+                        console.log("LOG: Oyuncu [" + myIndex + "] Güncellendi -> X: " + Math.round(x) + " Y: " + Math.round(y) +
+                                    " | Kaynak: " + source + " | Gelen Veri: " + Math.round(incomingX) + "," + Math.round(incomingY));
+                    }
+
+                    Component.onCompleted:{
+                        console.log("LOG: Oyuncu [" + myIndex + "] YARATILDI (Component.onCompleted)");
+                        updatePosition()
+
+                    }
+
+                    // 3. ÖNEMLİ OLAN BU: Ana verideki (root.inputPositions) değişiklikleri dinle!
+                        Connections {
+                            target: root
+                            function onInputPositionsChanged() {
+                                rmidplayers.updatePosition()
+                            }
+                        }
+
+
+                    // Sürükleme bitince sinyal gönder
+                    onPlayerReleased:(newX, newY) =>{ // MouseArea içindeyse
+                                    console.log("LOG: Oyuncu [" + myIndex + "] Elle Bırakıldı -> X: " + Math.round(newX) + " Y: " + Math.round(newY));
+                                    root.playerMoved(myIndex, newX, newY)
+                                }
                 }
             }
 
         }
 
         //rakip defans
-        Column{
+        Item{
             //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-            y: (root.height - height) / 2
-            spacing: 40
+            // y: (root.height - height) / 2
+            // spacing: 40
             Repeater {
                 model: rivaldefenders
 
                 delegate: Footballer {
+                    id:rdefplayers
+                    readonly property int myIndex: 1+root.defenders+root.middfielders+root.forwards+root.rivalforwards+root.rivalmiddfielders+index
                     color: "yellow"
                     width: root.width/20
                     height: root.width/20
+                    y: ((root.height - height) / 2)-((rivaldefenders-index-((rivaldefenders+1)/2))*root.height/6)
+                    x:root.width-(26+width+1*(((root.width-200)/spaceRate)+width))
+
+                    // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
+                    function updatePosition() {
+                        // 1. Fare ile tutuyorsam güncelleme
+                        if (typeof isPressed !== "undefined" && isPressed) return;
+
+                        var source = "YOK (Data Undefined)"; // Log için durum
+                        var incomingX = 0;
+                        var incomingY = 0;
+
+                        // 2. Veri kontrolü
+                        if (root.inputPositions && root.inputPositions[myIndex]) {
+                            incomingX = root.inputPositions[myIndex].x;
+                            incomingY = root.inputPositions[myIndex].y;
+                            source = "VERİTABANI";
+
+                            // 3. HATA ÖNLEYİCİ (0,0 Kontrolü)
+                            // Kaleci (Index 0) hariç diğerleri 0,0'a gidemez
+                            if (myIndex > 0 && incomingX === 0 && incomingY === 0) {
+                                console.log("LOG: [" + myIndex + "] Hatalı (0,0) verisi geldi, güncelleme iptal edildi.");
+                                return;
+                            }
+
+                            // Koordinatları Ata
+                            x = incomingX;
+                            y = incomingY;
+                        }
+
+                        // 4. KONSOLA DURUMU YAZ (BU SATIR ÇOK ÖNEMLİ)
+                        console.log("LOG: Oyuncu [" + myIndex + "] Güncellendi -> X: " + Math.round(x) + " Y: " + Math.round(y) +
+                                    " | Kaynak: " + source + " | Gelen Veri: " + Math.round(incomingX) + "," + Math.round(incomingY));
+                    }
+
+                    Component.onCompleted:{
+                        console.log("LOG: Oyuncu [" + myIndex + "] YARATILDI (Component.onCompleted)");
+                        updatePosition()
+
+                    }
+
+                    // 3. ÖNEMLİ OLAN BU: Ana verideki (root.inputPositions) değişiklikleri dinle!
+                        Connections {
+                            target: root
+                            function onInputPositionsChanged() {
+                                rdefplayers.updatePosition()
+                            }
+                        }
+
+
+                    // Sürükleme bitince sinyal gönder
+                    onPlayerReleased:(newX, newY) =>{ // MouseArea içindeyse
+                                    console.log("LOG: Oyuncu [" + myIndex + "] Elle Bırakıldı -> X: " + Math.round(newX) + " Y: " + Math.round(newY));
+                                    root.playerMoved(myIndex, newX, newY)
+                                }
                 }
             }
 
         }
 
         //rakip kaleci
-        Column{
+        Item{
         //anchors.verticalCenter: parent.verticalCenter//dikey ortalar
-        y: (root.height - height) / 2
+        // y: (root.height - height) / 2
         Footballer{
+            id:rgoalkeeper
+            readonly property int myIndex: 1+root.defenders+root.middfielders+root.forwards+root.rivalforwards+root.rivalmiddfielders+root.rivaldefenders
             color: "yellow"
             width:root.width/20
             height: root.width/20
+            y: (root.height - height) / 2
+            x:root.width-26-width
+
+            // LOGLAMA İÇİN GÜNCELLENMİŞ FONKSİYON
+            function updatePosition() {
+                // 1. Fare ile tutuyorsam güncelleme
+                if (typeof isPressed !== "undefined" && isPressed) return;
+
+                var source = "YOK (Data Undefined)"; // Log için durum
+                var incomingX = 0;
+                var incomingY = 0;
+
+                // 2. Veri kontrolü
+                if (root.inputPositions && root.inputPositions[myIndex]) {
+                    incomingX = root.inputPositions[myIndex].x;
+                    incomingY = root.inputPositions[myIndex].y;
+                    source = "VERİTABANI";
+
+                    // 3. HATA ÖNLEYİCİ (0,0 Kontrolü)
+                    // Kaleci (Index 0) hariç diğerleri 0,0'a gidemez
+                    if (myIndex > 0 && incomingX === 0 && incomingY === 0) {
+                        console.log("LOG: [" + myIndex + "] Hatalı (0,0) verisi geldi, güncelleme iptal edildi.");
+                        return;
+                    }
+
+                    // Koordinatları Ata
+                    x = incomingX;
+                    y = incomingY;
+                }
+
+                // 4. KONSOLA DURUMU YAZ (BU SATIR ÇOK ÖNEMLİ)
+                console.log("LOG: Oyuncu [" + myIndex + "] Güncellendi -> X: " + Math.round(x) + " Y: " + Math.round(y) +
+                            " | Kaynak: " + source + " | Gelen Veri: " + Math.round(incomingX) + "," + Math.round(incomingY));
+            }
+
+            Component.onCompleted:{
+                console.log("LOG: Oyuncu [" + myIndex + "] YARATILDI (Component.onCompleted)");
+                updatePosition()
+
+            }
+
+            // 3. ÖNEMLİ OLAN BU: Ana verideki (root.inputPositions) değişiklikleri dinle!
+                Connections {
+                    target: root
+                    function onInputPositionsChanged() {
+                        rgoalkeeper.updatePosition()
+                    }
+                }
+
+
+            // Sürükleme bitince sinyal gönder
+            onPlayerReleased:(newX, newY) =>{ // MouseArea içindeyse
+                            console.log("LOG: Oyuncu [" + myIndex + "] Elle Bırakıldı -> X: " + Math.round(newX) + " Y: " + Math.round(newY));
+                            root.playerMoved(myIndex, newX, newY)
+                        }
         }
         }
     }

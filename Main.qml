@@ -99,12 +99,36 @@ ApplicationWindow {
                                                                  "midCount": mid, // Orta saha sayısı
                                                                  "fwdCount": fwd, // Forvet sayısı
                                                                  "pageSource": stackPage, // Hangi sayfaya gideceği
+
+                                                                 //rakip içinde veri ayırıyoruz
+                                                                 "rivalDefCount": 0,
+                                                                 "rivalMidCount": 0,
+                                                                 "rivalFwdCount": 0
                                                              })
                                      }
                                      else{//rakip takım formasyon ekleme aksiyonu
-                                         stackView.currentItem.myrivaldefenders = def
-                                         stackView.currentItem.myrivalmiddfielders = mid
-                                         stackView.currentItem.myrivalforwards = fwd
+                                         // stackView.currentItem.myrivaldefenders = def
+                                         // stackView.currentItem.myrivalmiddfielders = mid
+                                         // stackView.currentItem.myrivalforwards = fwd
+
+                                         if (stackView.currentItem && stackView.currentItem.menuIndex !== undefined) {
+
+                                                 var currentIndex = stackView.currentItem.menuIndex;
+
+                                                 if (currentIndex !== -1) {
+                                                     // 2. VERİYİ KALICI OLARAK MODELE YAZ
+                                                     dynamicMenuModel.setProperty(currentIndex, "rivalDefCount", def);
+                                                     dynamicMenuModel.setProperty(currentIndex, "rivalMidCount", mid);
+                                                     dynamicMenuModel.setProperty(currentIndex, "rivalFwdCount", fwd);
+
+                                                     // 3. EKRANI ANLIK GÜNCELLE (Kullanıcı değişikliği hemen görsün)
+                                                     stackView.currentItem.myrivaldefenders = def;
+                                                     stackView.currentItem.myrivalmiddfielders = mid;
+                                                     stackView.currentItem.myrivalforwards = fwd;
+
+                                                     console.log("Rakip takım kaydedildi. Index:", currentIndex, "Formasyon:", def, mid, fwd);
+                                                 }
+                                             }
                                      }
                                  }
 
@@ -165,6 +189,9 @@ ApplicationWindow {
                                            "mymiddfielders": model.midCount,
                                            "myforwards": model.fwdCount,
                                            "menuIndex": index,// Modeldeki sırasını bilsin ki oraya geri yazsın
+                                           "myrivaldefenders": model.rivalDefCount,
+                                           "myrivalmiddfielders": model.rivalMidCount,
+                                           "myrivalforwards": model.rivalFwdCount
                                        }) // Modelden gelen sayfa yolu
                         drawer.close()
                     }
