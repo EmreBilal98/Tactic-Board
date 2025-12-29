@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.5
 
+
 ApplicationWindow {
     id: window
     visible: true
@@ -9,6 +10,33 @@ ApplicationWindow {
     title: qsTr("Tactic Board")
 
     property var tacticStorage: []//futbolcuların konumlarını tutan data
+
+    // --- 1. UYGULAMA AÇILINCA VERİLERİ YÜKLE ---
+        Component.onCompleted: {
+            var savedList = dbManager.loadFormations();
+            console.log("Veritabanından yüklenen formasyon sayısı:", savedList.length);
+
+            for (var i = 0; i < savedList.length; i++) {
+                var item = savedList[i];
+
+                // 1. Depoya pozisyonları ekle
+                // Veritabanından gelen ID'yi de saklayabiliriz ama şimdilik sıra ile gidiyoruz
+                window.tacticStorage.push(item.positions);
+
+                // 2. Menüye ekle (Veritabanı ID'sini de modele ekliyoruz!)
+                dynamicMenuModel.append({
+                    "dbId": item.id, // Veritabanı ID'si (Update için gerekli)
+                    "title": item.title,
+                    "defCount": item.defCount,
+                    "midCount": item.midCount,
+                    "fwdCount": item.fwdCount,
+                    "rivalDefCount": item.rivalDefCount,
+                    "rivalMidCount": item.rivalMidCount,
+                    "rivalFwdCount": item.rivalFwdCount,
+                    "pageSource": stackPage
+                })
+            }
+        }
 
     //buradaki toolbar da seçilen formasyonların isimlerini tutan bir stack view yapısı ve formasyon seçme action u var
      header:ToolBar {
@@ -92,19 +120,46 @@ ApplicationWindow {
 
              onFormationSelected:(name,def,mid,fwd)=>{
                                      if(!formationPopup.action){//takım formasyon ekleme aksiyonu
-                                     window.tacticStorage.push([ [], [], [] ]);
-                                     dynamicMenuModel.append({
-                                                                 "title": name,//formasyon ismi
-                                                                 "defCount": def, // Defans sayısı
-                                                                 "midCount": mid, // Orta saha sayısı
-                                                                 "fwdCount": fwd, // Forvet sayısı
-                                                                 "pageSource": stackPage, // Hangi sayfaya gideceği
+                                     // window.tacticStorage.push([ [], [], [] ]);
+                                     // dynamicMenuModel.append({
+                                     //                             "title": name,//formasyon ismi
+                                     //                             "defCount": def, // Defans sayısı
+                                     //                             "midCount": mid, // Orta saha sayısı
+                                     //                             "fwdCount": fwd, // Forvet sayısı
+                                     //                             "pageSource": stackPage, // Hangi sayfaya gideceği
 
-                                                                 //rakip içinde veri ayırıyoruz
-                                                                 "rivalDefCount": 0,
-                                                                 "rivalMidCount": 0,
-                                                                 "rivalFwdCount": 0
-                                                             })
+                                     //                             //rakip içinde veri ayırıyoruz
+                                     //                             "rivalDefCount": 0,
+                                     //                             "rivalMidCount": 0,
+                                     //                             "rivalFwdCount": 0
+                                     //                         })
+                                         // Boş pozisyon verisi
+                                                         var emptyPos = [[], [], []];
+
+                                                         // C++ Veritabanına Ekle
+                                                         // addFormation fonksiyonu parametreleri: title, def, mid, fwd, rDef, rMid, rFwd, positions
+                                                         dbManager.addFormation(name, def, mid, fwd, 0, 0, 0, emptyPos);
+
+                                                         // Ekranı güncellemek için, tüm listeyi baştan yüklemek en temizidir
+                                                         // ama performans için sadece modele de ekleyebiliriz.
+                                                         // En güvenlisi basitçe yeniden başlatmak gibi davranıp son ekleneni çekmektir
+                                                         // veya manuel eklemektir. Manuel ekleyelim:
+
+                                                         // Not: Gerçek DB ID'sini almak için addFormation int dönebilir ama
+                                                         // şimdilik basitçe UI'a ekleyelim, kapatıp açınca DB'den ID gelir.
+
+                                                         window.tacticStorage.push(emptyPos);
+                                                         dynamicMenuModel.append({
+                                                             "dbId": -1, // Geçici ID, restartta düzelir
+                                                             "title": name,
+                                                             "defCount": def,
+                                                             "midCount": mid,
+                                                             "fwdCount": fwd,
+                                                             "rivalDefCount": 0,
+                                                             "rivalMidCount": 0,
+                                                             "rivalFwdCount": 0,
+                                                             "pageSource": stackPage
+                                                         })
                                      }
                                      else{//rakip takım formasyon ekleme aksiyonu
                                          // stackView.currentItem.myrivaldefenders = def
@@ -221,37 +276,64 @@ ApplicationWindow {
 
     //tacticstorageye veriyi yazıyor
     function updateModelPosition(tacticIndex, pageIndex, playerIndex, x, y) {
-            if (tacticIndex === -1) return;
+        if (tacticIndex === -1) return;
 
-            // 1. Veriyi tacticStorage'dan çek
-            var allPagesData = window.tacticStorage[tacticIndex];
+        // ---------------------------------------------------------
+        // 1. ADIM: RAM (window.tacticStorage) GÜNCELLEMESİ
+        // ---------------------------------------------------------
+        var allPagesData = window.tacticStorage[tacticIndex];
 
-            // Eğer veri henüz yoksa oluştur
-            if (!allPagesData) {
-                allPagesData = [[], [], []];
-            }
+        // Veri yoksa oluştur
+        if (!allPagesData) {
+            allPagesData = [[], [], []];
+        }
 
-            // 2. İlgili sayfayı kontrol et
-            if (!allPagesData[pageIndex]) {
-                allPagesData[pageIndex] = [];
-            }
+        // İlgili sayfayı kontrol et
+        if (!allPagesData[pageIndex]) {
+            allPagesData[pageIndex] = [];
+        }
 
-            // 3. Eksik indeksleri doldur (Array boşluklarını doldur)
-            while (allPagesData[pageIndex].length <= playerIndex) {
-                allPagesData[pageIndex].push({ x: 0, y: 0 });
-            }
+        // Eksik indeksleri doldur (Array boşluklarını doldur)
+        while (allPagesData[pageIndex].length <= playerIndex) {
+            allPagesData[pageIndex].push({ x: 0, y: 0 });
+        }
 
-            // 4. Veriyi güncelle
-            allPagesData[pageIndex][playerIndex] = { x: x, y: y };
+        // Veriyi güncelle
+        allPagesData[pageIndex][playerIndex] = { x: x, y: y };
 
-            // 5. Depoya geri yaz
-            window.tacticStorage[tacticIndex] = allPagesData;
+        // Depoya geri yaz
+        window.tacticStorage[tacticIndex] = allPagesData;
 
-            console.log("KAYIT BAŞARILI (Storage): Tactic", tacticIndex, "Page", pageIndex, "XY:", x, y);
+        console.log("RAM Güncellendi: Tactic", tacticIndex, "XY:", x, y);
 
-            // 6. Ekrana Canlı Yansıt
-            if (stackView.currentItem && stackView.currentItem.menuIndex === tacticIndex) {
-                stackView.currentItem.savedPositions = allPagesData;
+        // ---------------------------------------------------------
+        // 2. ADIM: EKRAN (CANLI) GÜNCELLEMESİ
+        // ---------------------------------------------------------
+        if (stackView.currentItem && stackView.currentItem.menuIndex === tacticIndex) {
+            stackView.currentItem.savedPositions = allPagesData;
+        }
+
+        // ---------------------------------------------------------
+        // 3. ADIM: VERİTABANI (SQLITE) GÜNCELLEMESİ [YENİ KISIM]
+        // ---------------------------------------------------------
+
+        // Modelden bu taktiğin gerçek veritabanı ID'sini (dbId) alıyoruz.
+        var modelItem = dynamicMenuModel.get(tacticIndex);
+
+        // modelItem bazen undefined olabilir, kontrol edelim
+        if (modelItem) {
+            var dbId = modelItem.dbId;
+
+            // Eğer geçerli bir ID varsa C++ tarafını çağır
+            // dbId: Veritabanındaki satır ID'si
+            // allPagesData: Güncel koordinatların tamamı
+            if (dbId !== undefined && dbId !== -1) {
+                dbManager.updateFormationPositions(dbId, allPagesData);
+                console.log("SQLITE Güncellendi -> DB ID:", dbId);
+            } else {
+                console.log("UYARI: DB ID bulunamadı, veritabanına yazılamadı.");
             }
         }
+
     }
+}
