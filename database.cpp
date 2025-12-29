@@ -56,6 +56,15 @@ bool Database::addFormation(const QString &title, int def, int mid, int fwd, int
     QJsonDocument doc = QJsonDocument::fromVariant(positions);
     QString jsonPositions = doc.toJson(QJsonDocument::Compact);
 
+    // Eğer çeviri sonucu boşsa, "null" ise veya çok kısaysa,
+    // Veritabanına NULL gitmesin diye elle varsayılan boş yapıyı yazıyoruz.
+    if (jsonPositions.isEmpty() || jsonPositions == "null" || jsonPositions == "") {
+        qDebug() << "UYARI: Gelen pozisyon verisi boş, varsayılan değer atanıyor.";
+        jsonPositions = "[[],[],[]]"; // 3 Sayfalık boş yapı
+    }
+
+    qDebug() << "DB INSERTING POSITIONS:" << jsonPositions; // Kontrol için log
+
     QSqlQuery query;
     query.prepare("INSERT INTO formations (title, def_count, mid_count, fwd_count, "
                   "rival_def, rival_mid, rival_fwd, positions) "
@@ -74,21 +83,35 @@ bool Database::addFormation(const QString &title, int def, int mid, int fwd, int
         qDebug() << "Ekleme hatası:" << query.lastError();
         return false;
     }
+
     return true;
 
 }
 
 bool Database::updateFormationPositions(int id, const QVariant &positions)
 {
+    // Veriyi JSON'a çevir
     QJsonDocument doc = QJsonDocument::fromVariant(positions);
     QString jsonPositions = doc.toJson(QJsonDocument::Compact);
+
+    // --- LOG 1: C++'a veri geldi mi? ---
+    qDebug() << "C++ UPDATE ÇAĞRILDI -> ID:" << id << " DATA UZUNLUK:" << jsonPositions.length();
+    // Verinin içeriğini de görelim (Kısa halini)
+    qDebug() << "DATA:" << jsonPositions;
 
     QSqlQuery query;
     query.prepare("UPDATE formations SET positions = :pos WHERE id = :id");
     query.bindValue(":pos", jsonPositions);
     query.bindValue(":id", id);
 
-    return query.exec();
+    if (!query.exec()) {
+        // --- LOG 2: SQL Hatası var mı? ---
+        qDebug() << "!!! SQL UPDATE HATASI !!! :" << query.lastError().text();
+        return false;
+    }
+
+    qDebug() << ">>> SQL UPDATE BAŞARILI <<<";
+    return true;
 }
 
 bool Database::removeFormation(int id)
@@ -123,6 +146,26 @@ QVariantList Database::loadFormations()
         list.append(map);
     }
     return list;
+}
+
+bool Database::updateRivalCounts(int id, int rDef, int rMid, int rFwd)
+{
+    qDebug() << "Rakip Güncelleniyor -> ID:" << id << " D:" << rDef << " M:" << rMid << " F:" << rFwd;
+
+    QSqlQuery query;
+    // Sadece rakip sütunlarını güncelliyoruz
+    query.prepare("UPDATE formations SET rival_def = :rd, rival_mid = :rm, rival_fwd = :rf WHERE id = :id");
+
+    query.bindValue(":rd", rDef);
+    query.bindValue(":rm", rMid);
+    query.bindValue(":rf", rFwd);
+    query.bindValue(":id", id);
+
+    if (!query.exec()) {
+        qDebug() << "Rakip güncelleme hatası:" << query.lastError().text();
+        return false;
+    }
+    return true;
 }
 
 

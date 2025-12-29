@@ -26,15 +26,14 @@ Item {
 
                 if (menuIndex === -1) return;
 
-                // --- DEĞİŞİKLİK: Veriyi window.tacticStorage'dan çek ---
                 // window id'si Main.qml'de tanımlı olduğu için erişebiliriz.
                 var data = window.tacticStorage[menuIndex];
 
                 if (data) {
-                    console.log("VERİ BULUNDU (Storage). Sayfa 0 Uzunluk:", data[0] ? data[0].length : 0)
-                    // Veriyi kopyalayarak al (Referans hatasını önlemek için)
-                    // JSON parse/stringify en temiz derin kopyalama yöntemidir.
-                    savedPositions = JSON.parse(JSON.stringify(data));
+                    var cleanData = JSON.parse(JSON.stringify(data));
+
+                    savedPositions = cleanData;
+                    console.log("Veri Başarıyla Yüklendi. Sayfa 0 Oyuncu Sayısı:", cleanData[0] ? cleanData[0].length : 0);
                 } else {
                     console.log("UYARI: Veri henüz yok (Boş başlatılıyor).")
                     savedPositions = [[], [], []];
