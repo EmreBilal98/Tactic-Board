@@ -25,11 +25,11 @@ public:
     Q_INVOKABLE void init();
 
     // Yeni bir formasyon ekler (Pozisyonları JSON string olarak saklarız)
-    Q_INVOKABLE bool addFormation(const QString &title, int def, int mid, int fwd,
-                                  int rDef, int rMid, int rFwd, const QVariant &positions);
+    Q_INVOKABLE int addFormation(const QString &title, int def, int mid, int fwd,
+                                  int rDef, int rMid, int rFwd, const QString &positions);
 
     // Mevcut bir formasyonu günceller (Örn: oyuncu yeri değişince)
-    Q_INVOKABLE bool updateFormationPositions(int id, const QVariant &positions);
+    Q_INVOKABLE bool updateFormationPositions(int id, const QString &positions);
 
     // Formasyonu siler
     Q_INVOKABLE bool removeFormation(int id);

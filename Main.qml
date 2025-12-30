@@ -72,6 +72,8 @@ ApplicationWindow {
         ToolButton {display: AbstractButton.TextOnly; action: actionFormation}
         //yeni rakip formasyonu eklemek için bir action button
         ToolButton {display: AbstractButton.TextOnly; action: actionRFormation}
+        //formasyon silmek için bir action button
+        ToolButton {display: AbstractButton.TextOnly; action: removeFormation}
         }
 
     }
@@ -96,6 +98,16 @@ ApplicationWindow {
              formationPopup.open()
           }
       }
+
+      //rakip formasyonu seçmeyi triggerlayan action bar
+       Action {
+           id: removeFormation
+           text: qsTr("RemoveFormation")
+           onTriggered: {
+               //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
+              rformationPopup.open()
+           }
+       }
 
      //formasyon seçme aksiyonunun pop-up ı
      Popup {
@@ -124,37 +136,20 @@ ApplicationWindow {
 
              onFormationSelected:(name,def,mid,fwd)=>{
                                      if(!formationPopup.action){//takım formasyon ekleme aksiyonu
-                                     // window.tacticStorage.push([ [], [], [] ]);
-                                     // dynamicMenuModel.append({
-                                     //                             "title": name,//formasyon ismi
-                                     //                             "defCount": def, // Defans sayısı
-                                     //                             "midCount": mid, // Orta saha sayısı
-                                     //                             "fwdCount": fwd, // Forvet sayısı
-                                     //                             "pageSource": stackPage, // Hangi sayfaya gideceği
 
-                                     //                             //rakip içinde veri ayırıyoruz
-                                     //                             "rivalDefCount": 0,
-                                     //                             "rivalMidCount": 0,
-                                     //                             "rivalFwdCount": 0
-                                     //                         })
-                                         // Boş pozisyon verisi
                                          var emptyPos = [[], [], []];
+
+                                         var jsonString = JSON.stringify(emptyPos);
 
                                          // C++ Veritabanına Ekle
                                          // addFormation fonksiyonu parametreleri: title, def, mid, fwd, rDef, rMid, rFwd, positions
-                                         dbManager.addFormation(name, def, mid, fwd, 0, 0, 0, emptyPos);
+                                         var newDbId =dbManager.addFormation(name, def, mid, fwd, 0, 0, 0, jsonString);
 
-                                         // Ekranı güncellemek için, tüm listeyi baştan yüklemek en temizidir
-                                         // ama performans için sadece modele de ekleyebiliriz.
-                                         // En güvenlisi basitçe yeniden başlatmak gibi davranıp son ekleneni çekmektir
-                                         // veya manuel eklemektir. Manuel ekleyelim:
-
-                                         // Not: Gerçek DB ID'sini almak için addFormation int dönebilir ama
-                                         // şimdilik basitçe UI'a ekleyelim, kapatıp açınca DB'den ID gelir.
+                                        console.log("Yeni Kayıt -> ID:", newDbId, " Data:", jsonString);
 
                                          window.tacticStorage.push(emptyPos);
                                          dynamicMenuModel.append({
-                                                                     "dbId": -1, // Geçici ID, restartta düzelir
+                                                                     "dbId": newDbId, // Geçici ID, restartta düzelir
                                                                      "title": name,
                                                                      "defCount": def,
                                                                      "midCount": mid,
@@ -166,58 +161,67 @@ ApplicationWindow {
                                                                  })
                                      }
                                      else{//rakip takım formasyon ekleme aksiyonu
-                                         // stackView.currentItem.myrivaldefenders = def
-                                         // stackView.currentItem.myrivalmiddfielders = mid
-                                         // stackView.currentItem.myrivalforwards = fwd
 
-                                         // if (stackView.currentItem && stackView.currentItem.menuIndex !== undefined) {
+                                         // 1. Açık olan sayfanın indeksini ve model verisini al
+                                         if (stackView.currentItem && stackView.currentItem.menuIndex !== -1) {
 
-                                         //     var currentIndex = stackView.currentItem.menuIndex;
+                                             var currentIndex = stackView.currentItem.menuIndex;
+                                             var modelItem = dynamicMenuModel.get(currentIndex);
 
-                                         //     if (currentIndex !== -1) {
-                                         //         // 2. VERİYİ KALICI OLARAK MODELE YAZ
-                                         //         dynamicMenuModel.setProperty(currentIndex, "rivalDefCount", def);
-                                         //         dynamicMenuModel.setProperty(currentIndex, "rivalMidCount", mid);
-                                         //         dynamicMenuModel.setProperty(currentIndex, "rivalFwdCount", fwd);
+                                             // 2. Önce EKRANI güncelle (Anlık değişim için)
+                                             stackView.currentItem.myrivaldefenders = def;
+                                             stackView.currentItem.myrivalmiddfielders = mid;
+                                             stackView.currentItem.myrivalforwards = fwd;
 
-                                         //         // 3. EKRANI ANLIK GÜNCELLE (Kullanıcı değişikliği hemen görsün)
-                                         //         stackView.currentItem.myrivaldefenders = def;
-                                         //         stackView.currentItem.myrivalmiddfielders = mid;
-                                         //         stackView.currentItem.myrivalforwards = fwd;
+                                             // 3. Modeli güncelle (Menüde veri tutarsızlığı olmasın)
+                                             dynamicMenuModel.setProperty(currentIndex, "rivalDefCount", def);
+                                             dynamicMenuModel.setProperty(currentIndex, "rivalMidCount", mid);
+                                             dynamicMenuModel.setProperty(currentIndex, "rivalFwdCount", fwd);
 
-                                         //         console.log("Rakip takım kaydedildi. Index:", currentIndex, "Formasyon:", def, mid, fwd);
-                                         //     }
-                                         // }
-
-                                         // RAKİP TAKIM SEÇİMİ (Action = true)
-
-                                                     // 1. Açık olan sayfanın indeksini ve model verisini al
-                                                     if (stackView.currentItem && stackView.currentItem.menuIndex !== -1) {
-
-                                                         var currentIndex = stackView.currentItem.menuIndex;
-                                                         var modelItem = dynamicMenuModel.get(currentIndex);
-
-                                                         // 2. Önce EKRANI güncelle (Anlık değişim için)
-                                                         stackView.currentItem.myrivaldefenders = def;
-                                                         stackView.currentItem.myrivalmiddfielders = mid;
-                                                         stackView.currentItem.myrivalforwards = fwd;
-
-                                                         // 3. Modeli güncelle (Menüde veri tutarsızlığı olmasın)
-                                                         dynamicMenuModel.setProperty(currentIndex, "rivalDefCount", def);
-                                                         dynamicMenuModel.setProperty(currentIndex, "rivalMidCount", mid);
-                                                         dynamicMenuModel.setProperty(currentIndex, "rivalFwdCount", fwd);
-
-                                                         // 4. VERİTABANINA KAYDET (Kalıcılık için)
-                                                         if (modelItem && modelItem.dbId !== undefined && modelItem.dbId !== -1) {
-                                                             // C++ fonksiyonunu çağırıyoruz
-                                                             dbManager.updateRivalCounts(modelItem.dbId, def, mid, fwd);
-                                                         } else {
-                                                             console.log("HATA: DB ID bulunamadı, rakip kaydedilemedi.");
-                                                         }
+                                             // 4. VERİTABANINA KAYDET (Kalıcılık için)
+                                             if (modelItem && modelItem.dbId !== undefined && modelItem.dbId !== -1) {
+                                                 // C++ fonksiyonunu çağırıyoruz
+                                                 dbManager.updateRivalCounts(modelItem.dbId, def, mid, fwd);
+                                             } else {
+                                                 console.log("HATA: DB ID bulunamadı, rakip kaydedilemedi.");
+                                             }
                                          }
 
                                      }
                                  }
+
+         }
+     }
+
+     Popup {
+         id:rformationPopup
+         anchors.centerIn: parent
+         width:200
+         height:200
+         modal: true
+         focus: true
+         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+         clip:true
+
+         property bool action:false//0 ise kendi takımın 1 ise rakip takım ayarlanacak
+
+         //içinde formasyonlar içeren liste
+         ListView {
+             id: rlistView
+             focus: true
+             anchors.fill:parent
+             delegate: FormationDelegate {ltext: model.title;deleteMode: true}
+             model: dynamicMenuModel
+
+             //bu sinyal sayesinde seçilen formasyonun ismi(stack bara yazılıyor) defender,middfielder,forwards değerlerine
+             //göre de değerler alınıp playerları pozisyona yerleştirmede kullanılacak
+             signal formationDeleteRequested(int Index)
+
+             onFormationDeleteRequested:(Index)=>{
+
+                window.deleteFormationByIndex(Index)
+
+             }
 
          }
      }
@@ -237,31 +241,6 @@ ApplicationWindow {
         Column {
             id:menuColumn
             anchors.fill: parent
-
-            ItemDelegate {
-                text: qsTr("Page 1")
-                width: parent.width
-                onClicked: {
-                    stackView.push("Page1Form.ui.qml")
-                    drawer.close()
-                }
-            }
-            ItemDelegate {
-                text: qsTr("Page 2")
-                width: parent.width
-                onClicked: {
-                    stackView.push("Page2Form.ui.qml")
-                    drawer.close()
-                }
-            }
-            ItemDelegate {
-                text: qsTr("Page 3")
-                width: parent.width
-                onClicked: {
-                    stackView.push("Page3Form.ui.qml")
-                    drawer.close()
-                }
-            }
             //modeldeki verilere göre formasyon ismi item ismi oluyor ve pozisyondaki oyuncu verileri
             //formasyona ait düzenlenecek qml e gönderiliyor
             Repeater {
@@ -353,19 +332,68 @@ ApplicationWindow {
         var modelItem = dynamicMenuModel.get(tacticIndex);
 
         // modelItem bazen undefined olabilir, kontrol edelim
-        if (modelItem) {
-            var dbId = modelItem.dbId;
+        // if (modelItem) {
+        //     var dbId = modelItem.dbId;
 
-            // Eğer geçerli bir ID varsa C++ tarafını çağır
-            // dbId: Veritabanındaki satır ID'si
-            // allPagesData: Güncel koordinatların tamamı
-            if (dbId !== undefined && dbId !== -1) {
-                dbManager.updateFormationPositions(dbId, allPagesData);
-                console.log("SQLITE Güncellendi -> DB ID:", dbId);
-            } else {
-                console.log("UYARI: DB ID bulunamadı, veritabanına yazılamadı.");
-            }
+        //     // Eğer geçerli bir ID varsa C++ tarafını çağır
+        //     // dbId: Veritabanındaki satır ID'si
+        //     // allPagesData: Güncel koordinatların tamamı
+        //     if (dbId !== undefined && dbId !== -1) {
+        //         dbManager.updateFormationPositions(dbId, allPagesData);
+        //         console.log("SQLITE Güncellendi -> DB ID:", dbId);
+        //     } else {
+        //         console.log("UYARI: DB ID bulunamadı, veritabanına yazılamadı.");
+        //     }
+        // }
+        if (modelItem && modelItem.dbId !== undefined && modelItem.dbId !== -1) {
+
+            // --- DEĞİŞİKLİK BURADA ---
+            // JavaScript nesnesini String formatına paketliyoruz
+            var jsonString = JSON.stringify(allPagesData);
+
+            console.log("C++'a Giden String:", jsonString); // Log ile kontrol edin
+
+            // Artık nesneyi değil, bu stringi gönderiyoruz
+            dbManager.updateFormationPositions(modelItem.dbId, jsonString);
+
+        } else {
+            console.log("HATA: DB ID bulunamadı.");
         }
 
+
     }
+
+    function deleteFormationByIndex(listIndex) {
+            // 1. Modelden o satırın verisini çek
+            var modelItem = dynamicMenuModel.get(listIndex);
+
+            // Eğer modelde veri yoksa işlem yapma
+            if (!modelItem) return;
+
+            // 2. ID'yi modelin içinden al
+            var dbId = modelItem.dbId;
+
+            console.log("Siliniyor -> Index:", listIndex, " DB ID:", dbId, " İsim:", modelItem.title);
+
+            // 3. Veritabanından Sil (ID geçerliyse)
+            if (dbId !== undefined && dbId !== -1) {
+                var success = dbManager.removeFormation(dbId);
+
+                if (!success) {
+                    console.log("HATA: Veritabanından silinemedi.");
+                    return;
+                }
+            }
+
+            // 4. Görsel Listeden (Modelden) Sil
+            dynamicMenuModel.remove(listIndex);
+
+            // 5. Eğer tacticStorage (pozisyon dizisi) kullanıyorsan onu da senkronize et
+            // (Eğer tacticStorage kullanmıyorsan bu satırı silebilirsin)
+            if (window.tacticStorage && window.tacticStorage.length > listIndex) {
+                window.tacticStorage.splice(listIndex, 1);
+            }
+
+            console.log("Başarıyla Silindi.");
+        }
 }

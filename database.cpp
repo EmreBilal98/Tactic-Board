@@ -50,20 +50,21 @@ void Database::init()
     }
 }
 
-bool Database::addFormation(const QString &title, int def, int mid, int fwd, int rDef, int rMid, int rFwd, const QVariant &positions)
+int Database::addFormation(const QString &title, int def, int mid, int fwd, int rDef, int rMid, int rFwd, const QString &positions)
 {
     // QML'den gelen JS Array'i JSON String'e çevir
-    QJsonDocument doc = QJsonDocument::fromVariant(positions);
-    QString jsonPositions = doc.toJson(QJsonDocument::Compact);
+    // QJsonDocument doc = QJsonDocument::fromVariant(positions);
+    // QString jsonPositions = doc.toJson(QJsonDocument::Compact);
+    QString finalPositions = positions;
 
     // Eğer çeviri sonucu boşsa, "null" ise veya çok kısaysa,
     // Veritabanına NULL gitmesin diye elle varsayılan boş yapıyı yazıyoruz.
-    if (jsonPositions.isEmpty() || jsonPositions == "null" || jsonPositions == "") {
+    if (finalPositions.isEmpty() || finalPositions == "null" || finalPositions == "undefined") {
         qDebug() << "UYARI: Gelen pozisyon verisi boş, varsayılan değer atanıyor.";
-        jsonPositions = "[[],[],[]]"; // 3 Sayfalık boş yapı
+        finalPositions = "[[],[],[]]"; // 3 Sayfalık boş yapı
     }
 
-    qDebug() << "DB INSERTING POSITIONS:" << jsonPositions; // Kontrol için log
+    qDebug() << "DB INSERTING POSITIONS:" << finalPositions; // Kontrol için log
 
     QSqlQuery query;
     query.prepare("INSERT INTO formations (title, def_count, mid_count, fwd_count, "
@@ -77,35 +78,35 @@ bool Database::addFormation(const QString &title, int def, int mid, int fwd, int
     query.bindValue(":rDef", rDef);
     query.bindValue(":rMid", rMid);
     query.bindValue(":rFwd", rFwd);
-    query.bindValue(":pos", jsonPositions);
+    query.bindValue(":pos", finalPositions);
 
     if(!query.exec()) {
         qDebug() << "Ekleme hatası:" << query.lastError();
-        return false;
+        return -1;
     }
 
-    return true;
+    return query.lastInsertId().toInt();
 
 }
 
-bool Database::updateFormationPositions(int id, const QVariant &positions)
+bool Database::updateFormationPositions(int id, const QString &jsonString)
 {
-    // Veriyi JSON'a çevir
-    QJsonDocument doc = QJsonDocument::fromVariant(positions);
-    QString jsonPositions = doc.toJson(QJsonDocument::Compact);
+    qDebug() << "C++ UPDATE -> ID:" << id << " GELEN VERİ BOYUTU:" << jsonString.length();
+    qDebug() << "GELEN VERİ:" << jsonString;
 
-    // --- LOG 1: C++'a veri geldi mi? ---
-    qDebug() << "C++ UPDATE ÇAĞRILDI -> ID:" << id << " DATA UZUNLUK:" << jsonPositions.length();
-    // Verinin içeriğini de görelim (Kısa halini)
-    qDebug() << "DATA:" << jsonPositions;
+    if (jsonString.isEmpty() || jsonString == "null" || jsonString == "undefined") {
+        qDebug() << "!!! HATA: QML'den boş veri geldi, güncelleme iptal edildi !!!";
+        return false;
+    }
 
     QSqlQuery query;
     query.prepare("UPDATE formations SET positions = :pos WHERE id = :id");
-    query.bindValue(":pos", jsonPositions);
+
+    // Hazır string'i direkt bağlıyoruz
+    query.bindValue(":pos", jsonString);
     query.bindValue(":id", id);
 
     if (!query.exec()) {
-        // --- LOG 2: SQL Hatası var mı? ---
         qDebug() << "!!! SQL UPDATE HATASI !!! :" << query.lastError().text();
         return false;
     }
