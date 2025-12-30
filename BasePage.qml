@@ -15,6 +15,7 @@ Item {
     property int myrivalforwards: 0
     property int menuIndex: -1
     property var savedPositions: [[], [], []]
+    property var rivalSavedPositions: [[], [], []]
 
     // --- KRİTİK DÜZELTME: SAYFA AÇILINCA VERİYİ ÇEK ---
         Component.onCompleted: {
@@ -38,6 +39,16 @@ Item {
                     console.log("UYARI: Veri henüz yok (Boş başlatılıyor).")
                     savedPositions = [[], [], []];
                 }
+
+                var rData = window.rivalTacticStorage[menuIndex];
+
+                if (rData) {
+                    rivalSavedPositions = JSON.parse(JSON.stringify(rData));
+                    console.log("Rakip Takım Verisi Yüklendi. Uzunluk:", rivalSavedPositions[0] ? rivalSavedPositions[0].length : 0);
+                } else {
+                    console.log("UYARI: Rakip verisi yok (Boş başlatılıyor).")
+                    rivalSavedPositions = [[], [], []];
+                }
             }
 
     // Bu fonksiyonu DefaultFormation çağıracak
@@ -47,6 +58,15 @@ Item {
             // veya scope chain sayesinde direkt fonksiyon adını yazabiliriz.
             updateModelPosition(menuIndex, pageIndex, playerIndex, x, y)
     }
+
+    function handleRivalPositionSave(pageIndex, playerIndex, x, y) {
+            // Main.qml'deki global rakip güncelleme fonksiyonunu çağırıyoruz
+            if (typeof updateRivalModelPosition === "function") {
+                updateRivalModelPosition(menuIndex, pageIndex, playerIndex, x, y)
+            } else {
+                console.log("HATA: updateRivalModelPosition fonksiyonu bulunamadı!")
+            }
+        }
 
     //burada 3 ekran var.takım dizilişi,toplu oyun,topsuz oyunbasepage.qml
     SwipeView {
@@ -62,12 +82,14 @@ Item {
                 property int pageId: 0//sayfanın özel id si(takım diziliş = 0)
 
                 inputPositions: (broot.savedPositions && broot.savedPositions[0]) ? broot.savedPositions[0] : []
+                rivalInputPositions: (broot.rivalSavedPositions && broot.rivalSavedPositions[0]) ? broot.rivalSavedPositions[0] : []
                 defenders: mydefenders
                 middfielders: mymiddfielders
                 forwards: myforwards
 
                 // DefaultFormation içinden bir oyuncu hareket edince bu sinyali tetiklemeli
                 onPlayerMoved: (pIndex, px, py) => broot.handlePositionSave(pageId, pIndex, px, py)
+                onRivalPlayerMoved: (pIndex, px, py) => broot.handleRivalPositionSave(pageId, pIndex, px, py)
             }
         }
 
@@ -81,6 +103,7 @@ Item {
                 property int pageId: 1//sayfanın özel id si(toplu oyun = 1)
 
                 inputPositions: (broot.savedPositions && broot.savedPositions[1]) ? broot.savedPositions[1] : []
+                rivalInputPositions: (broot.rivalSavedPositions && broot.rivalSavedPositions[1]) ? broot.rivalSavedPositions[1] : []
                 spaceRate: 10
                 defenders: mydefenders
                 middfielders: mymiddfielders
@@ -91,6 +114,7 @@ Item {
 
                 // DefaultFormation içinden bir oyuncu hareket edince bu sinyali tetiklemeli
                 onPlayerMoved: (pIndex, px, py) => broot.handlePositionSave(pageId, pIndex, px, py)
+                onRivalPlayerMoved: (pIndex, px, py) => broot.handleRivalPositionSave(pageId, pIndex, px, py)
             }
 
         }
@@ -107,6 +131,7 @@ Item {
                 // Modelden gelen verinin SADECE 0. indeksini (bu sayfanın verisini) gönderiyoruz
                                 // Kontrol ekliyoruz: savedPositions var mı? Varsa 0. elemanı var mı?
                 inputPositions: (broot.savedPositions && broot.savedPositions[2]) ? broot.savedPositions[2] : []
+                rivalInputPositions: (broot.rivalSavedPositions && broot.rivalSavedPositions[2]) ? broot.rivalSavedPositions[2] : []
                 spaceRate: 10
                 defenders: mydefenders
                 middfielders: mymiddfielders
@@ -117,6 +142,7 @@ Item {
 
                 // DefaultFormation içinden bir oyuncu hareket edince bu sinyali tetiklemeli
                 onPlayerMoved: (pIndex, px, py) => broot.handlePositionSave(pageId, pIndex, px, py)
+                onRivalPlayerMoved: (pIndex, px, py) => broot.handleRivalPositionSave(pageId, pIndex, px, py)
             }
         }
     }

@@ -37,8 +37,10 @@ public:
     // Tüm formasyonları QML'e uygun bir liste olarak döndürür
     Q_INVOKABLE QVariantList loadFormations();
 
-    //rakip sayısını günceeller
+    //rakip sayısını günceller
     Q_INVOKABLE bool updateRivalCounts(int id, int rDef, int rMid, int rFwd);
+
+    Q_INVOKABLE bool updateRivalPositions(int id, const QString &jsonString);
 
 private:
     QSqlDatabase m_db;

@@ -10,6 +10,7 @@ ApplicationWindow {
     title: qsTr("Tactic Board")
 
     property var tacticStorage: []//futbolcuların konumlarını tutan data
+    property var rivalTacticStorage: []//rakip futbolcuların konumlarını tutan data
 
     // --- UYGULAMA AÇILINCA VERİLERİ YÜKLE ---
         Component.onCompleted: {
@@ -18,6 +19,7 @@ ApplicationWindow {
 
             //tacticStorage'ı sıfırla (Çift kayıt olmasın)
             window.tacticStorage = [];
+            window.rivalTacticStorage = [];
             dynamicMenuModel.clear();
 
             for (var i = 0; i < savedList.length; i++) {
@@ -25,6 +27,10 @@ ApplicationWindow {
 
                 // Depoya pozisyonları ekle
                 window.tacticStorage.push(item.positions);
+
+                //varsa rakip pozisyonları yoksa boş arrayi ata
+                var rPos = item.rivalPositions ? item.rivalPositions : [[],[],[]];
+                window.rivalTacticStorage.push(rPos);
 
                 // Menüye ekle (Veritabanı ID'sini de modele ekliyoruz!)
                 dynamicMenuModel.append({
@@ -148,6 +154,7 @@ ApplicationWindow {
                                         console.log("Yeni Kayıt -> ID:", newDbId, " Data:", jsonString);
 
                                          window.tacticStorage.push(emptyPos);
+                                         window.rivalTacticStorage.push([[],[],[]]);
                                          dynamicMenuModel.append({
                                                                      "dbId": newDbId, // Geçici ID, restartta düzelir
                                                                      "title": name,
@@ -178,7 +185,7 @@ ApplicationWindow {
                                              dynamicMenuModel.setProperty(currentIndex, "rivalMidCount", mid);
                                              dynamicMenuModel.setProperty(currentIndex, "rivalFwdCount", fwd);
 
-                                             // 4. VERİTABANINA KAYDET (Kalıcılık için)
+                                             // 4. VERİTABANINA KAYDET
                                              if (modelItem && modelItem.dbId !== undefined && modelItem.dbId !== -1) {
                                                  // C++ fonksiyonunu çağırıyoruz
                                                  dbManager.updateRivalCounts(modelItem.dbId, def, mid, fwd);
@@ -362,6 +369,67 @@ ApplicationWindow {
 
 
     }
+
+    function updateRivalModelPosition(tacticIndex, pageIndex, playerIndex, x, y) {
+            if (tacticIndex === -1) return;
+
+            // ---------------------------------------------------------
+            // 1. ADIM: RAM (window.rivalTacticStorage) GÜNCELLEMESİ
+            // ---------------------------------------------------------
+            // DİKKAT: Burada 'tacticStorage' değil 'rivalTacticStorage' kullanıyoruz
+            var allPagesData = window.rivalTacticStorage[tacticIndex];
+
+            // Veri yoksa oluştur
+            if (!allPagesData) {
+                allPagesData = [[], [], []];
+            }
+
+            // İlgili sayfayı kontrol et
+            if (!allPagesData[pageIndex]) {
+                allPagesData[pageIndex] = [];
+            }
+
+            // Eksik indeksleri doldur
+            while (allPagesData[pageIndex].length <= playerIndex) {
+                allPagesData[pageIndex].push({ x: 0, y: 0 });
+            }
+
+            // Veriyi güncelle
+            allPagesData[pageIndex][playerIndex] = { x: x, y: y };
+
+            // Depoya geri yaz
+            window.rivalTacticStorage[tacticIndex] = allPagesData;
+
+            console.log("RAKİP RAM Güncellendi: Tactic", tacticIndex, "XY:", x, y);
+
+            // ---------------------------------------------------------
+            // 2. ADIM: EKRAN (CANLI) GÜNCELLEMESİ
+            // ---------------------------------------------------------
+            if (stackView.currentItem && stackView.currentItem.menuIndex === tacticIndex) {
+                // DİKKAT: BasePage'deki 'rivalSavedPositions' değişkenini güncelliyoruz
+                stackView.currentItem.rivalSavedPositions = allPagesData;
+            }
+
+            // ---------------------------------------------------------
+            // 3. ADIM: VERİTABANI (SQLITE) GÜNCELLEMESİ
+            // ---------------------------------------------------------
+            var modelItem = dynamicMenuModel.get(tacticIndex);
+
+            if (modelItem && modelItem.dbId !== undefined && modelItem.dbId !== -1) {
+
+                // JavaScript nesnesini String formatına paketliyoruz
+                var jsonString = JSON.stringify(allPagesData);
+
+                console.log("C++'a Giden RAKİP String:", jsonString);
+
+                // DİKKAT: C++ tarafındaki YENİ fonksiyonu çağırıyoruz (updateRivalPositions)
+                // Bu fonksiyonu DatabaseManager.cpp'ye eklemiştik
+                dbManager.updateRivalPositions(modelItem.dbId, jsonString);
+
+            } else {
+                console.log("HATA: DB ID bulunamadı (Rakip Kayıt).");
+            }
+        }
 
     function deleteFormationByIndex(listIndex) {
             // 1. Modelden o satırın verisini çek

@@ -41,7 +41,8 @@ void Database::init()
             rival_def INTEGER,
             rival_mid INTEGER,
             rival_fwd INTEGER,
-            positions TEXT
+            positions TEXT,
+            rival_positions TEXT
         )
     )";
 
@@ -68,8 +69,8 @@ int Database::addFormation(const QString &title, int def, int mid, int fwd, int 
 
     QSqlQuery query;
     query.prepare("INSERT INTO formations (title, def_count, mid_count, fwd_count, "
-                  "rival_def, rival_mid, rival_fwd, positions) "
-                  "VALUES (:title, :def, :mid, :fwd, :rDef, :rMid, :rFwd, :pos)");
+                  "rival_def, rival_mid, rival_fwd, positions,rival_positions) "
+                  "VALUES (:title, :def, :mid, :fwd, :rDef, :rMid, :rFwd, :pos, :rivalPos)");
 
     query.bindValue(":title", title);
     query.bindValue(":def", def);
@@ -79,6 +80,7 @@ int Database::addFormation(const QString &title, int def, int mid, int fwd, int 
     query.bindValue(":rMid", rMid);
     query.bindValue(":rFwd", rFwd);
     query.bindValue(":pos", finalPositions);
+    query.bindValue(":rivalPos", "[[],[],[]]");
 
     if(!query.exec()) {
         qDebug() << "Ekleme hatası:" << query.lastError();
@@ -139,10 +141,14 @@ QVariantList Database::loadFormations()
         map["rivalMidCount"] = query.value("rival_mid");
         map["rivalFwdCount"] = query.value("rival_fwd");
 
-        // JSON String'i geri QVariant (JS Array)'e çevir
         QString jsonStr = query.value("positions").toString();
         QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
         map["positions"] = doc.toVariant();
+
+        QString jsonStrR = query.value("rival_positions").toString();
+        if(jsonStrR.isEmpty()) jsonStrR = "[[],[],[]]";
+        QJsonDocument docR = QJsonDocument::fromJson(jsonStrR.toUtf8());
+        map["rivalPositions"] = docR.toVariant();
 
         list.append(map);
     }
@@ -155,11 +161,12 @@ bool Database::updateRivalCounts(int id, int rDef, int rMid, int rFwd)
 
     QSqlQuery query;
     // Sadece rakip sütunlarını güncelliyoruz
-    query.prepare("UPDATE formations SET rival_def = :rd, rival_mid = :rm, rival_fwd = :rf WHERE id = :id");
+    query.prepare("UPDATE formations SET rival_def = :rd, rival_mid = :rm, rival_fwd = :rf, rival_positions = :emptyPos WHERE id = :id");
 
     query.bindValue(":rd", rDef);
     query.bindValue(":rm", rMid);
     query.bindValue(":rf", rFwd);
+    query.bindValue(":emptyPos", "[[],[],[]]");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
@@ -167,6 +174,16 @@ bool Database::updateRivalCounts(int id, int rDef, int rMid, int rFwd)
         return false;
     }
     return true;
+}
+
+bool Database::updateRivalPositions(int id, const QString &jsonString)
+{
+    QSqlQuery query;
+    // Sadece rival_positions güncellenir
+    query.prepare("UPDATE formations SET rival_positions = :pos WHERE id = :id");
+    query.bindValue(":pos", jsonString);
+    query.bindValue(":id", id);
+    return query.exec();
 }
 
 
