@@ -9,6 +9,8 @@ ApplicationWindow {
     height: 480
     title: qsTr("Tactic Board")
 
+    property bool isLoggedIn: false//login kontrol değişkeni
+
     property var tacticStorage: []//futbolcuların konumlarını tutan data
     property var rivalTacticStorage: []//rakip futbolcuların konumlarını tutan data
 
@@ -50,6 +52,7 @@ ApplicationWindow {
 
     //buradaki toolbar da seçilen formasyonların isimlerini tutan bir stack view yapısı ve formasyon seçme action u var
      header:ToolBar {
+        visible: isLoggedIn
         contentHeight: toolButton.implicitHeight
 
         //toolbar arka planı
@@ -239,6 +242,8 @@ ApplicationWindow {
         width: window.width * 0.17
         height: window.height
 
+        interactive: isLoggedIn
+
 
         //bu model yeni formasyonun ekleneceği model
         ListModel {
@@ -291,6 +296,9 @@ ApplicationWindow {
             id: stackPage
             BasePage {}
         }
+
+    MyLogin{}
+
 
     //tacticstorageye veriyi yazıyor
     function updateModelPosition(tacticIndex, pageIndex, playerIndex, x, y) {

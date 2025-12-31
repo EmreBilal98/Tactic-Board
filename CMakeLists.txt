@@ -25,6 +25,9 @@ qt_add_qml_module(apptactic_board
         QML_FILES FormationModel.qml
         QML_FILES DefaultFormation.qml
         SOURCES database.h database.cpp
+        QML_FILES MyLogin.qml
+        QML_FILES LoginBox.qml
+        QML_FILES ChangeBox.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

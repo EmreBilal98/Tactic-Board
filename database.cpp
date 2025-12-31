@@ -51,6 +51,36 @@ void Database::init()
     }
 }
 
+void Database::initLogin()
+{
+    if (!m_db.open()) {
+        qDebug() << "Veritabanı açılamadı:" << m_db.lastError();
+        return;
+    }
+
+    QSqlQuery query;
+    // Tabloyu oluştur: ID, Başlık, Oyuncu Sayıları ve Pozisyonlar (TEXT olarak)
+    QString createTable = R"(
+        CREATE TABLE IF NOT EXISTS Login (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            password TEXT
+        )
+    )";
+
+    if (!query.exec(createTable)) {
+        qDebug() << "Tablo oluşturma hatası:" << query.lastError();
+    }
+
+    QSqlQuery checkQuery("SELECT name FROM Login");
+
+    if (checkQuery.exec() && checkQuery.next()) {
+        qDebug() << "kullanıcı zaten mevcut.";
+    } else {
+        addUser("admin", "1234");
+    }
+}
+
 int Database::addFormation(const QString &title, int def, int mid, int fwd, int rDef, int rMid, int rFwd, const QString &positions)
 {
     // QML'den gelen JS Array'i JSON String'e çevir
@@ -91,6 +121,24 @@ int Database::addFormation(const QString &title, int def, int mid, int fwd, int 
 
 }
 
+bool Database::addUser(const QString &name, const QString &password)
+{
+    QSqlQuery query;
+    query.prepare("INSERT INTO Login (name, password) "
+                  "VALUES (:name, :pwd)");
+
+    query.bindValue(":name", name);
+    query.bindValue(":pwd", password);
+
+
+    if(!query.exec()) {
+        qDebug() << "Ekleme hatası:" << query.lastError();
+        return false;
+    }
+
+    return true;
+}
+
 bool Database::updateFormationPositions(int id, const QString &jsonString)
 {
     qDebug() << "C++ UPDATE -> ID:" << id << " GELEN VERİ BOYUTU:" << jsonString.length();
@@ -115,6 +163,16 @@ bool Database::updateFormationPositions(int id, const QString &jsonString)
 
     qDebug() << ">>> SQL UPDATE BAŞARILI <<<";
     return true;
+}
+
+bool Database::updateUser(const QString &name,const QString &password)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE Login SET name = :name, password = :pwd");
+
+    query.bindValue(":name", name);
+    query.bindValue(":pwd", password);
+    return query.exec();
 }
 
 bool Database::removeFormation(int id)
@@ -153,6 +211,21 @@ QVariantList Database::loadFormations()
         list.append(map);
     }
     return list;
+}
+
+int Database::GetID(const QString &name,const QString &password)
+{
+    QVariantList list;
+    int id;
+    QSqlQuery query;
+    query.prepare("SELECT id FROM Login where name = :name, password = :pwd");
+    query.bindValue(":name", name);
+    query.bindValue(":pwd", password);
+
+    while (query.next()) {
+        id = query.value("id").toInt();
+    }
+    return id;
 }
 
 bool Database::updateRivalCounts(int id, int rDef, int rMid, int rFwd)
