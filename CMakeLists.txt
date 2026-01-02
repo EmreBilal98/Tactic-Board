@@ -28,7 +28,14 @@ qt_add_qml_module(apptactic_board
         QML_FILES MyLogin.qml
         QML_FILES LoginBox.qml
         QML_FILES ChangeBox.qml
+        RESOURCES images.qrc
 )
+
+qt_add_resources(apptactic_board "icon"
+PREFIX "/"
+FILES plus.png delete.png competition.png
+)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

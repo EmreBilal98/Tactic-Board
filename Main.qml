@@ -78,11 +78,11 @@ ApplicationWindow {
             }
         }
         //yeni formasyon eklemek için bir action button
-        ToolButton {display: AbstractButton.TextOnly; action: actionFormation}
+        ToolButton {display: AbstractButton.IconOnly; action: actionFormation;icon.width: 28;icon.height: 28}
         //yeni rakip formasyonu eklemek için bir action button
-        ToolButton {display: AbstractButton.TextOnly; action: actionRFormation}
+        ToolButton {display: AbstractButton.IconOnly; action: actionRFormation;icon.width: 28;icon.height: 28}
         //formasyon silmek için bir action button
-        ToolButton {display: AbstractButton.TextOnly; action: removeFormation}
+        ToolButton {display: AbstractButton.IconOnly; action: removeFormation;icon.width: 28;icon.height: 28}
         }
 
     }
@@ -90,6 +90,7 @@ ApplicationWindow {
      Action {
          id: actionFormation
          text: qsTr("Formation")
+         icon.source: "qrc:/plus.png"
          onTriggered: {
              //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
             formationPopup.action=false
@@ -101,6 +102,7 @@ ApplicationWindow {
       Action {
           id: actionRFormation
           text: qsTr("RivalFormation")
+          icon.source: "qrc:/competition.png"
           onTriggered: {
               //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
              formationPopup.action=true
@@ -112,6 +114,7 @@ ApplicationWindow {
        Action {
            id: removeFormation
            text: qsTr("RemoveFormation")
+           icon.source: "qrc:/delete.png"
            onTriggered: {
                //trigger olunca formasyon seçmek için liste içeren bir pop-up açılıyor
               rformationPopup.open()
