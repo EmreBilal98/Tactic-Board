@@ -76,6 +76,26 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
+        // Hata Mesajı 2
+        Text {
+            id: errorText2
+            text: "password and repassword didn't match"
+            color: "red"
+            font.pixelSize: 12
+            visible: false
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        // Başarı Mesajı
+        Text {
+            id: successText
+            text: "user changed successfully"
+            color: "blue"
+            font.pixelSize: 12
+            visible: false
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
         Row{
         width:parent.width
         spacing:6
@@ -126,7 +146,22 @@ Item {
             }
 
             onClicked: {
-                //yeni user kaydet
+                errorText.visible=false
+                errorText2.visible=false
+                successText.visible=false
+                var user=dbManager.loadUser()
+                if(oldusernameField.text === user["name"] && oldpasswordField.text === user["password"]){
+                    if(passwordField.text === repasswordField.text){
+                        dbManager.updateUser(usernameField.text,passwordField.text)
+                        successText.visible=true
+                    }
+                    else{
+                        errorText2.visible=true
+                    }
+                }
+                else{
+                    errorText.visible=true
+                }
             }
         }
         }

@@ -12,7 +12,7 @@ Rectangle {
         // Giriş Kutusu (Ortadaki Beyaz Alan)
         Rectangle {
             width: 300
-            height: 350
+            height: 370
             anchors.centerIn: parent
             color: "white"
             radius: 10

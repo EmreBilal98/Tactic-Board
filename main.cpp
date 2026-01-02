@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 
     Database db;
     db.init();// Veritabanını başlat
+    db.initLogin();//login tablosu yoksa oluştur
 
     QQmlApplicationEngine engine;
 

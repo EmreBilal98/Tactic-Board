@@ -215,7 +215,6 @@ QVariantList Database::loadFormations()
 
 int Database::GetID(const QString &name,const QString &password)
 {
-    QVariantList list;
     int id;
     QSqlQuery query;
     query.prepare("SELECT id FROM Login where name = :name, password = :pwd");
@@ -226,6 +225,18 @@ int Database::GetID(const QString &name,const QString &password)
         id = query.value("id").toInt();
     }
     return id;
+}
+
+QVariantMap Database::loadUser()
+{
+    QVariantMap map;
+    QSqlQuery query("SELECT * FROM Login");
+    if (query.next()) {
+        map["name"] = query.value("name");
+        map["password"] = query.value("password");
+    }
+    qInfo()<<"user:"<<map;
+    return map;
 }
 
 bool Database::updateRivalCounts(int id, int rDef, int rMid, int rFwd)

@@ -72,7 +72,8 @@ Item {
             }
 
             onClicked: {
-                if (usernameField.text === "admin" && passwordField.text === "1234") {
+                var user=dbManager.loadUser()
+                if (usernameField.text === user["name"] && passwordField.text === user["password"]) {
                     console.log("Giriş Başarılı!");
                     window.isLoggedIn = true;
                     errorText.visible = false;

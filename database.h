@@ -49,6 +49,11 @@ public:
     // id bilgisini çeker
      int GetID(const QString &name,const QString &password);
 
+    // user bilgisini çeker
+    Q_INVOKABLE QVariantMap loadUser();
+
+
+
     //rakip sayısını günceller
     Q_INVOKABLE bool updateRivalCounts(int id, int rDef, int rMid, int rFwd);
 
