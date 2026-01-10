@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick Sql)
 find_package(Qt6 REQUIRED COMPONENTS Core Sql)
 
-qt_standard_project_setup(REQUIRES 6.8)
+qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(apptactic_board
     main.cpp
@@ -60,3 +60,4 @@ install(TARGETS apptactic_board
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
