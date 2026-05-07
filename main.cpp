@@ -22,7 +22,8 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("tactic_board", "Main");
+   engine.loadFromModule("tactic_board", "Main");
+   //engine.load(QUrl(u"qrc:/tactic_board/Main.qml"_qs));
 
     return app.exec();
 }
