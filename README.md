@@ -1,10 +1,11 @@
-readme_content = """# Tactic Board - Football Strategy & Formation Manager
+# Tactic Board - Football Strategy & Formation Manager 
 
 **Tactic Board**, teknik direktörlerin ve futbol analistlerinin hem kendi takımlarının hem de rakiplerinin saha içi dizilişlerini simüle etmelerini sağlayan, modern ve etkileşimli bir masaüstü uygulamasıdır. **Qt/QML** ve **C++** gücüyle geliştirilen uygulama, taktiksel varyasyonları kalıcı bir veri tabanında saklayarak veri kaybını önler.
 
 ## 🚀 Öne Çıkan Özellikler
 
 * **Üçlü Diziliş Sistemi:**
+    * **Kullanıcı adı ve Parola ile giriş:** Hem çalışmaların güvenliği hemde aynı cihazda farklı id lerin çalışmalarının ayrı yutulabilmesi amaçlanmıştır.   
     * **Genel Diziliş:** Sadece kendi takımınızın temel yerleşimine odaklanın.
     * **Toplu (Attacking) Diziliş:** Kendi takımınız ve rakip takımın hücum varyasyonlarını eş zamanlı görün.
     * **Topsuz (Defensive) Diziliş:** Savunma yerleşimlerini ve rakibe karşı pozisyon almayı analiz edin.
@@ -14,9 +15,20 @@ readme_content = """# Tactic Board - Football Strategy & Formation Manager
 
 ## 📸 Ekran Görüntüleri
 
-| Genel Diziliş | Toplu/Topsuz Analiz |
-| :--- | :--- |
-| ![Genel Diziliş](docs/screenshots/general_view.png) | ![Analiz Ekranı](docs/screenshots/match_view.png) |
+| Giriş Ekranı | Kullanıcı Oluşturma Ekranı | 
+| :--- | :--- | 
+| <img src="docs/screenshots/login_tb.png" width="400"> |<img src="docs/screenshots/create_user_tb.png" width="400"> | 
+| Genel Diziliş | Formasyonların tutulduğu menü |
+| ![Genel Diziliş](docs/screenshots/main.png) | ![Genel Diziliş](docs/screenshots/saved_formations.png)
+
+
+
+## 📽️ Kullanım Kesitleri
+|Formasyon Ekranı|
+| :--- |
+| <img src="docs/gifs/formation_screen.gif" width="700"> |
+|Sürükle Bırak ve Pozisyon Kaydolması özelliği|
+| <img src="docs/gifs/drag_drop.gif" width="700"> |
 
 ## 🛠️ Teknik Altyapı
 
