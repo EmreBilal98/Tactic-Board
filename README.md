@@ -44,6 +44,15 @@
 2. Dosyaları bir klasöre çıkarın.
 3. `apptactic_board.exe` dosyasını çalıştırın.
 
+### Linux
+1. [Releases](../../releases) sayfasından en güncel `.AppImage` yi indirin.
+2. imajı bir klasöre çıkarın.
+3. imajı çalıştırın.
+4. Eğer AppImageLauncher kuruluysa linux releaseindeki yönelgeyi uygulayıp uygulama menünüze uygulamayı ekleyebilirsiniz.Hızlı kullanım için run as program seçeneği ile hemen .AppImage yi açıp uygulamayı kullanabilirsiniz.
+
+# Yocto
+yocto imajınız için https://github.com/EmreBilal98/Tactic-Board-Yocto-Layer reposundaki layerı imajınıza ekleyebilirsiniz.
+
 ### Geliştiriciler İçin (Derleme)
 ```bash
 # Repoyu klonlayın
